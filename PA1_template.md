@@ -144,7 +144,7 @@ with(interval.df, plot(as.character(interval), average, type = "l", col = rgb(0.
 with(interval.df,points(as.character(interval), average, col = rgb(0.2, 0.7, 0.5, 0.15), pch = 1))
 ```
 
-![](~/Data%20Science%20Spec/R%20practice/5.Reproducible%20Reserch/AssignmentWeek1/figure/plotting-1.png)
+![](/figure/plotting-1.png)
 
 ``` r
 max.interval <- interval.df[with(interval.df, which(average %in% max(average))),]
