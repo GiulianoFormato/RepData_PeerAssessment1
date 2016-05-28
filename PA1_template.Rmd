@@ -1,25 +1,198 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Body Tracker"
+author: Giuliano Formato
+date: March 28, 2016
+output:
+  md_document:
+    variant: markdown_github
 ---
 
-
-## Loading and preprocessing the data
-
+# Body Tracker
 
 
-## What is mean total number of steps taken per day?
+Before starting the analysis, I usually setup the envirnoment.
+```{r setupEnv}
+library(knitr)
+library(lattice)
+library(reshape2)
+library(lubridate)
+opts_chunk$set(root.dir = '~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/',
+               fig.path='~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/figure/')
+```
 
 
+This document reports the anlysis done on the below **dataset**:
 
-## What is the average daily activity pattern?
+
+```{r dataIngestion}
+dataset.url <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'
+dataset.zip <- "activity.zip"
+dataset.csv <- "activity.csv"
+if (!file.exists(dataset.zip)){
+    download.file(dataset.url, dataset.zip)
+}  
+if (!file.exists(dataset.csv)) { 
+    unzip(dataset.zip) 
+}
+dataset.df <- read.csv(dataset.csv)
+summary(dataset.df)
+str(dataset.df)
+```
+
+This dataset was produced by a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The dataset consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+Once, the data have been collected, I moved on to a first anlysis of the daily activities.
+
+## Total steps per day
+
+Firstly, I gave a look at the total steps done daily by the subject. The total steps per day are computed as follow:
+```{r sumPerDay}
+(daily.steps <- with(dataset.df, sapply(split(steps,date),sum,na.rm=T)))
+```
+
+Then, a histogram was useful to quickly produce a first insight of the dataset:
+```{r HistPerDay}
+hist(daily.steps, main="Histogram for daily activities", 
+     xlab="Steps", 
+     border="green", 
+     col=rgb(0, 0, 0, 0.6),
+     breaks=8)
+```
+
+```{r DailyMeanMedian}
+steps.mean <- mean(daily.steps, na.rm = T)
+steps.median <- median(daily.steps, na.rm = T)
+```
+
+The mean and the median of the daily total steps are equal to `r steps.mean` and `r steps.median`.
+
+## Daily activity pattern
+
+This section shows the average number of steps taken every five minutes, averaged across all days.
+
+Find the below example of the average number of steps taken at each interval:
+```{r activityPattern}
+
+# computing the the average number of steps taken 
+interval.steps <- with(dataset.df, sapply(split(steps,interval),mean,na.rm=T))
+
+# building a dataframe
+interval.df = data.frame(interval = as.factor(names(interval.steps)), average= as.numeric(interval.steps))
+head (interval.df)
+```
 
 
+The following time series plot shows how the steps are distributed in average:
+
+
+```{r plotting}
+#plotting the time series
+with(interval.df, plot(as.character(interval), average, type = "l", col = rgb(0.2, 0.4, 0.5, 0.6),  
+                       main= "Daily activity pattern", xlab = "Interval", ylab = "Average across all days"))
+with(interval.df,points(as.character(interval), average, col = rgb(0.2, 0.7, 0.5, 0.15), pch = 1))
+```
+
+```{r maxInterval}
+max.interval <- interval.df[with(interval.df, which(average %in% max(average))),]
+```
+In average, the maximum number of steps, equals to `r max.interval[1,2]`, is taken at the 5-minute interval `r max.interval[1,1]`.
 
 ## Imputing missing values
 
+There are `r sum(is.na(dataset.df$steps))` couples of days/intervals where there are missing values (coded as **NA**). These NAs may introduce bias into some calculations or summaries of the data. That is the reason why I tried to impute these values.
+
+The example below shows some of the NA values in the dataset:
+```{r NAs}
+imputed.df <- dataset.df
+na.id <- is.na(imputed.df$steps)
+# before imputing
+head(imputed.df[na.id,])
+```
+
+I imputed the missing values by replacing them with the average of the steps taken in the corresponding interval across all days. Below are the first 10 missing observations along with the corresponding interval steps mean:
+```{r replicatingMeans}
+# repeating the inter val steps mean over all the dates in the dataset
+imputed.df$interval.steps.mean <- rep.int(interval.steps, times = length(unique(dataset.df$date)))
+# getting the NAs ids                                          
+na.id <- is.na(imputed.df$steps)
+# before imputing
+head(imputed.df[na.id,],10)
+```
+
+Afterwards, the above shown observations were as follows: 
+```{r imputingNA}
+# imputing the NAs values as the mean for that interval
+imputed.df$steps [na.id] <- imputed.df$interval.steps.mean [na.id]
+# after imputing
+imputed.df <- imputed.df [,1:3] 
+head(imputed.df[na.id,],10)
+```
+
+Then, I gave a look at the impact ot the imputed values to the total steps done daily by the subject. The total steps per day are computed as follow:
+```{r imputedSumPerDay}
+daily.imputed.steps <- with(imputed.df, sapply(split(steps,date),sum,na.rm=T))
+head(daily.imputed.steps)
+```
+
+Then, I compared the imputed dataset with the original one in a histogram:
+
+```{r imputedHistPerDay, fig.height=10 }
+par(mfrow = c(2, 1))
+hist(daily.steps, main="Daily activities", 
+     xlab="Steps", 
+     border="green", 
+     col=rgb(0, 0, 0, 0.6),
+     breaks=8)
+hist(daily.imputed.steps, main="Daily activities (imputed)", 
+     xlab="Steps", 
+     border="black", 
+     col=rgb(0.8, 0.7, 0.2, 0.6),
+     breaks=8)
+```
+
+```{r imputedDailyMeanMedian}
+imputed.steps.mean <- mean(daily.imputed.steps, na.rm = T)
+imputed.steps.median <- median(daily.imputed.steps, na.rm = T)
+```
+
+The mean and the median of the daily imputed steps are slightly different from the originals:  
+```{r meanMedianComparison}
+datasets.name <- c("original","imputed")
+datasets.means <- c(steps.mean,imputed.steps.mean)
+datasets.medians <- c(steps.median,imputed.steps.median)
+(comparison <- data.frame(dataset = datasets.name, mean = datasets.means, median = datasets.medians))
+```
+
+## Weekdays vs Weekends Analysis
+
+This section shows a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the imputed average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+Firstly, I added a new factor variable to the dataset, the variable has two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day:
+```{r weekdaysVariable}
+imputed.df$weekday <- factor(as.numeric(wday(as.Date(dataset.df$date)) %in% 2:6), 
+                             label = c("weekend","weekday"))
+head(imputed.df)
+```
+
+Afterwards, I computed the imputed average number of steps taken in the weekdays and in the weekend:
+```{r weekdaysMean}
+# melt
+melt.imputed.df <- melt(imputed.df, id = c("interval","weekday"),
+                        measure.vars = c("steps"),variable_name = "var")
+# dcast
+imputed.weekdays.mean <- dcast(data = melt.imputed.df, formula = interval + weekday ~ variable, mean)
+head(imputed.weekdays.mean)
+```
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+Finally, I made the panel plot using the lattice plot system:
+```{r weekdaysPlot}
+
+with(imputed.weekdays.mean, xyplot(steps ~ interval | weekday, layout=c(1,2), type = "l", pch=20,
+                                   main = "Weekdays and weekends activity pattern", 
+                                   ylab = "Avg of steps", xlab = "5-minute interval"
+                                   ))
+```
+
+
+
