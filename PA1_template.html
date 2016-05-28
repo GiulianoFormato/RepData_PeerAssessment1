@@ -219,8 +219,8 @@ library(lubridate)
 ##     date
 </code></pre>
 
-<pre><code class="r">opts_chunk$set(root.dir = &#39;~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/&#39;,
-               fig.path=&#39;~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/figure/&#39;)
+<pre><code class="r">opts_chunk$set(root.dir = &#39;/&#39;,
+               fig.path=&#39;/figure/&#39;)
 </code></pre>
 
 <p>This document reports the anlysis done on the below <strong>dataset</strong>:</p>
@@ -480,7 +480,8 @@ head(imputed.df)
 <p>Afterwards, I computed the imputed average number of steps taken in the weekdays and in the weekend:</p>
 
 <pre><code class="r"># melt
-melt.imputed.df &lt;- melt(imputed.df, id = c(&quot;interval&quot;,&quot;weekday&quot;),measure.vars = c(&quot;steps&quot;),variable_name = &quot;var&quot;)
+melt.imputed.df &lt;- melt(imputed.df, id = c(&quot;interval&quot;,&quot;weekday&quot;),
+                        measure.vars = c(&quot;steps&quot;),variable_name = &quot;var&quot;)
 # dcast
 imputed.weekdays.mean &lt;- dcast(data = melt.imputed.df, formula = interval + weekday ~ variable, mean)
 head(imputed.weekdays.mean)

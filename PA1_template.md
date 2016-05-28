@@ -18,8 +18,8 @@ library(lubridate)
     ##     date
 
 ``` r
-opts_chunk$set(root.dir = '~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/',
-               fig.path='~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/figure/')
+opts_chunk$set(root.dir = '/',
+               fig.path='/figure/')
 ```
 
 This document reports the anlysis done on the below **dataset**:
@@ -102,7 +102,7 @@ hist(daily.steps, main="Histogram for daily activities",
      breaks=8)
 ```
 
-![](~/Data%20Science%20Spec/R%20practice/5.Reproducible%20Reserch/AssignmentWeek1/figure/HistPerDay-1.png)
+![](/figure/HistPerDay-1.png)
 
 ``` r
 steps.mean <- mean(daily.steps, na.rm = T)
@@ -245,7 +245,7 @@ hist(daily.imputed.steps, main="Daily activities (imputed)",
      breaks=8)
 ```
 
-![](~/Data%20Science%20Spec/R%20practice/5.Reproducible%20Reserch/AssignmentWeek1/figure/imputedHistPerDay-1.png)
+![](/figure/imputedHistPerDay-1.png)
 
 ``` r
 imputed.steps.mean <- mean(daily.imputed.steps, na.rm = T)
@@ -314,4 +314,4 @@ with(imputed.weekdays.mean, xyplot(steps ~ interval | weekday, layout=c(1,2), ty
                                    ))
 ```
 
-![](~/Data%20Science%20Spec/R%20practice/5.Reproducible%20Reserch/AssignmentWeek1/figure/weekdaysPlot-1.png)
+![](/figure/weekdaysPlot-1.png)

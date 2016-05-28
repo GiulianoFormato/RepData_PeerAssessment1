@@ -16,8 +16,8 @@ library(knitr)
 library(lattice)
 library(reshape2)
 library(lubridate)
-opts_chunk$set(root.dir = '~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/',
-               fig.path='~/Data Science Spec/R practice/5.Reproducible Reserch/AssignmentWeek1/figure/')
+opts_chunk$set(root.dir = '/',
+               fig.path='/figure/')
 ```
 
 
